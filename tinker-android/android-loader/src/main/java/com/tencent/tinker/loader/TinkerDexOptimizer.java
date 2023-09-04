@@ -69,6 +69,8 @@ public final class TinkerDexOptimizer {
     private static final String TAG = "Tinker.ParallelDex";
 
     private static final String INTERPRET_LOCK_FILE_NAME = "interpret.lock";
+    public static int MAX_DEXOPT_NUM = 2;
+    public static int MAX_DEXMODULE_NUM = 2;
 
     /**
      * Optimize (trigger dexopt or dex2oat) dexes.
@@ -105,7 +107,7 @@ public final class TinkerDexOptimizer {
         });
         for (File dexFile : sortList) {
             OptimizeWorker worker = new OptimizeWorker(context, dexFile, optimizedDir, useInterpretMode,
-                  useDLC, targetISA, useEmergencyMode, cb);
+                    useDLC, targetISA, useEmergencyMode, cb);
             if (!worker.run()) {
                 return false;
             }
@@ -271,7 +273,7 @@ public final class TinkerDexOptimizer {
         }
 
         final File dexFile = new File(dexPath);
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < MAX_DEXOPT_NUM; ++i) {
             if (triggerSecondaryDexOpt(context, dexFile, oatFile, true)) {
                 return;
             }
@@ -279,7 +281,7 @@ public final class TinkerDexOptimizer {
 
         if (!SharePatchFileUtil.isLegalFile(oatFile)) {
             if ("huawei".equalsIgnoreCase(Build.MANUFACTURER) || "honor".equalsIgnoreCase(Build.MANUFACTURER)) {
-                for (int i = 0; i < 5; ++i) {
+                for (int i = 0; i < MAX_DEXMODULE_NUM; ++i) {
                     try {
                         registerDexModule(context, dexPath);
                         if (SharePatchFileUtil.isLegalFile(oatFile)) {
@@ -342,7 +344,7 @@ public final class TinkerDexOptimizer {
                 "-f",
                 "--secondary-dex",
                 "-m", ShareTinkerInternals.isNewerOrEqualThanVersion(31 /* Android S */, true)
-                        ? "verify" : "speed-profile",
+                ? "verify" : "speed-profile",
                 context.getPackageName()
         };
         executePMSShellCommand(context, args);
@@ -420,7 +422,7 @@ public final class TinkerDexOptimizer {
         }
     }
 
-    private static final IBinder[] sPMSBinderProxy = { null };
+    private static final IBinder[] sPMSBinderProxy = {null};
 
     private static IBinder getPMSBinderProxy(Context context) throws IllegalStateException {
         synchronized (sPMSBinderProxy) {
@@ -501,7 +503,7 @@ public final class TinkerDexOptimizer {
         }
     }
 
-    private static final PackageManager[] sSynchronizedPMCache = { null };
+    private static final PackageManager[] sSynchronizedPMCache = {null};
 
     private static final PackageManager getSynchronizedPackageManager(Context context) throws IllegalStateException {
         synchronized (sSynchronizedPMCache) {
@@ -556,7 +558,7 @@ public final class TinkerDexOptimizer {
     private static boolean waitUntilFileGeneratedOrTimeout(Context context, String filePath, Long... timeOutSeq) {
         final File file = new File(filePath);
         final Long[] delaySeq = (timeOutSeq != null && timeOutSeq.length > 0)
-                ? timeOutSeq : new Long[] {1000L, 2000L, 4000L, 8000L, 16000L, 32000L};
+                ? timeOutSeq : new Long[]{1000L, 2000L, 4000L, 8000L, 16000L, 32000L};
         int delaySeqIdx = 0;
         while (!SharePatchFileUtil.isLegalFile(file) && delaySeqIdx < delaySeq.length) {
             SystemClock.sleep(delaySeq[delaySeqIdx++]);
