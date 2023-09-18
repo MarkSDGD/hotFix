@@ -69,8 +69,8 @@ public final class TinkerDexOptimizer {
     private static final String TAG = "Tinker.ParallelDex";
 
     private static final String INTERPRET_LOCK_FILE_NAME = "interpret.lock";
-    public static int MAX_DEXOPT_NUM = 2;
-    public static int MAX_DEXMODULE_NUM = 2;
+    public static int MAX_DEXOPT_NUM = 1;
+    public static int MAX_DEXMODULE_NUM = 1;
 
     /**
      * Optimize (trigger dexopt or dex2oat) dexes.
